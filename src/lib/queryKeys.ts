@@ -14,6 +14,7 @@ export const qk = {
   eligibility: (programId: number, groupId: number, careIds?: number[]) =>
     ['programs', 'eligibility', programId, groupId, careIds ?? []] as const,
   venues: (keyword?: string) => ['venues', keyword ?? ''] as const,
+  venuePlaces: (query: string) => ['venues', 'places', query] as const,
   venueFacilities: (id: number) => ['venues', id, 'facilities'] as const,
   eventDashboard: ['events', 'summary'] as const,
   myEvents: (params?: object) => ['events', 'list', params ?? {}] as const,

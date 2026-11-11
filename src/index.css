@@ -261,3 +261,52 @@
   outline-offset: 4px;
   border-radius: 6px;
 }
+
+/* ---------- AI 진행 표시 (AiProgress) ---------- */
+@keyframes nubi-ai-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(0.72) rotate(18deg); opacity: 0.55; }
+}
+@keyframes nubi-ai-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes nubi-ai-shimmer {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+@keyframes nubi-ai-step-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes nubi-ai-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-brand) 0%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-brand) 12%, transparent); }
+}
+.nubi-ai-sparkle { animation: nubi-ai-float 2.4s ease-in-out infinite; }
+.nubi-ai-star { transform-box: fill-box; transform-origin: center; animation: nubi-ai-twinkle 1.6s ease-in-out infinite; }
+.nubi-ai-star-2 { animation-delay: 0.35s; }
+.nubi-ai-star-3 { animation-delay: 0.7s; }
+.nubi-ai-bar {
+  background: linear-gradient(90deg, var(--color-brand), #8b5cf6, var(--color-brand));
+  background-size: 200% 100%;
+  animation: nubi-ai-shimmer 1.8s linear infinite;
+}
+.nubi-ai-step { animation: nubi-ai-step-in 0.35s ease-out; }
+.nubi-ai-card { animation: nubi-ai-glow 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .nubi-ai-sparkle, .nubi-ai-star, .nubi-ai-bar, .nubi-ai-step, .nubi-ai-card { animation: none; }
+}
+
+/* ---------- 선택 상자 화살표 ----------
+   브라우저 기본 화살표는 테두리에 붙고 브라우저마다 모양이 달라서, 직접 그린 화살표로 바꿉니다.
+   이미 화살표 아이콘을 따로 붙인 선택 상자(appearance-none)와 여러 개 고르는 상자는 그대로 둡니다. */
+select:not([multiple]):not(.appearance-none) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%238b919c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}

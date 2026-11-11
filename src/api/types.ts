@@ -264,6 +264,26 @@ export interface Venue {
   longitude: number | null
 }
 
+/** 카카오 장소 검색 결과. venueId가 있으면 이미 우리 장소로 등록된 곳이에요. */
+export interface PlaceCandidate {
+  kakaoPlaceId: string
+  name: string
+  category: string | null
+  roadAddress: string | null
+  address: string | null
+  phone: string | null
+  latitude: number
+  longitude: number
+  venueId: number | null
+}
+
+export interface VenueCreateRequest {
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+}
+
 export interface ProgramImage {
   imageId: number
   url: string
