@@ -4,8 +4,8 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { programApi } from '@/api/endpoints'
 import type { ApplyMethod, District, EligibilityResult, ProgramCategory, ProgramSearchParams } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/ui'
-import { APPLY_METHOD_LABEL } from '@/lib/labels'
+import { EmptyState, ErrorState, LoadingState, PageHeader, LoadMore } from '@/components/ui'
+import { APPLY_METHOD_LABEL, DISTRICT_LABEL } from '@/lib/labels'
 import { useSelectedGroup } from '@/lib/selectedGroup'
 import { qk } from '@/lib/queryKeys'
 import { cn, formatNumber, toYearMonth } from '@/lib/format'
@@ -16,7 +16,6 @@ import { Dropdown, MenuItem } from '@/pages/eligible/components/Dropdown'
 import { ProgramCard } from '@/pages/eligible/components/ProgramCard'
 import { useProgramApply } from '@/pages/eligible/components/useProgramApply'
 import { ALL_MONTHS, monthLabel, monthOptions } from '@/pages/eligible/components/programFormat'
-import { RegionDropdown, YONGIN } from '@/pages/eligible/components/RegionDropdown'
 import { ProgramRow } from './components/ProgramRow'
 
 const PAGE_SIZE = 20
@@ -41,7 +40,6 @@ function useExploreFilters() {
   const filters = {
     q: sp.get('q') ?? '',
     category: pick('category', CATEGORY_TABS.map((c) => c.value)),
-    city: sp.get('city') || undefined,
     district: pick('district', DISTRICTS),
     month: sp.get('month') ?? toYearMonth(),
     applyMethod: pick('method', APPLY_METHODS),
@@ -78,8 +76,7 @@ export default function ProgramExplorePage() {
   const params: ProgramSearchParams = {
     keyword: filters.q || undefined,
     category: filters.category,
-    city: filters.city,
-    district: filters.city === YONGIN ? filters.district : undefined,
+    district: filters.district,
     month: monthParam,
     applyMethod: filters.applyMethod,
     accessibleOnly: filters.accessibleOnly || undefined,
@@ -145,11 +142,20 @@ export default function ProgramExplorePage() {
           )}
         </Dropdown>
 
-        <RegionDropdown
-          withDistricts
-          value={{ city: filters.city, district: filters.district }}
-          onChange={(r) => update({ city: r.city ?? null, district: r.district ?? null })}
-        />
+        <Dropdown label={filters.district ? DISTRICT_LABEL[filters.district] : '구 전체'} active={!!filters.district}>
+          {(close) => (
+            <>
+              <MenuItem selected={!filters.district} onClick={() => (update({ district: null }), close())}>
+                구 전체
+              </MenuItem>
+              {DISTRICTS.map((d) => (
+                <MenuItem key={d} selected={filters.district === d} onClick={() => (update({ district: d }), close())}>
+                  {DISTRICT_LABEL[d]}
+                </MenuItem>
+              ))}
+            </>
+          )}
+        </Dropdown>
 
         <Dropdown label={monthLabel(filters.month, 'plain')}>
           {(close) => (
@@ -277,13 +283,7 @@ export default function ProgramExplorePage() {
               ))}
             </div>
           )}
-          {listQuery.hasNextPage && (
-            <div className="flex justify-center pt-6">
-              <Button variant="outline" loading={listQuery.isFetchingNextPage} onClick={() => listQuery.fetchNextPage()}>
-                더 보기
-              </Button>
-            </div>
-          )}
+          <LoadMore query={listQuery} className="pt-6" />
         </>
       )}
       {modal}

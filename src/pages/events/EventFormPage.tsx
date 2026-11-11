@@ -16,6 +16,7 @@ import { VenueSection } from './form/VenueSection'
 import { SupportSection, type SelectedSupports } from './form/SupportSection'
 import { useSupportTags } from './form/useSupportTags'
 import { EventPreviewCard } from './form/EventPreviewCard'
+import { PromotionSection } from './promotion/PromotionSection'
 
 export default function EventFormPage() {
   const { eventId: param } = useParams()
@@ -118,6 +119,15 @@ function EventForm({ initial, onReload }: { initial: ProgramDetail | null; onRel
     queryFn: () => venueApi.facilities(venue!.venueId),
     enabled: !!venue,
   })
+
+  // 홍보문·포스터는 저장된 행사 정보로 만들어지므로, 저장 안 한 변경이 있으면 알려 줍니다.
+  const [savedForm] = useState(form)
+  const [savedSupports] = useState(supports)
+  const unsaved =
+    (Object.keys(form) as (keyof FormState)[]).some((k) => form[k] !== savedForm[k]) ||
+    (venue?.venueId ?? null) !== (initial?.venue?.venueId ?? null) ||
+    supports.size !== savedSupports.size ||
+    [...supports].some(([id, ev]) => savedSupports.get(id) !== ev)
 
   const startAt = form.date && form.startTime ? `${form.date}T${form.startTime}:00` : null
 
@@ -391,6 +401,16 @@ function EventForm({ initial, onReload }: { initial: ProgramDetail | null; onRel
               다른 기관이 지원 카드로 신청하면 인원과 필요한 지원이 함께 들어와요.
             </p>
           </SectionCard>
+
+          {isEdit ? (
+            <PromotionSection eventId={initial.programId} dirty={unsaved} />
+          ) : (
+            <SectionCard title="AI 홍보문">
+              <p className="w-full text-[12.5px] text-gray-500">
+                행사를 한 번 저장하면 일반·쉬운 말·문자용 홍보문과 포스터 PDF를 만들 수 있어요.
+              </p>
+            </SectionCard>
+          )}
         </div>
 
         <div className="sticky top-6 flex w-[380px] shrink-0 flex-col gap-4">

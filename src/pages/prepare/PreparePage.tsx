@@ -12,6 +12,8 @@ import { qk } from '@/lib/queryKeys'
 import { cn, dDay, formatDateTime, parseDate, supportText } from '@/lib/format'
 import { useSelectedGroup } from '@/lib/selectedGroup'
 import { ProgramPicker } from './components/ProgramPicker'
+import { AiDocStatus, PdfButton } from './components/AiDocStatus'
+import { useApplicationDocuments } from './components/useApplicationDocuments'
 import iconBack from '@/assets/icons/applications-back.svg'
 import iconChevron from '@/assets/icons/prepare-chevron-down.svg'
 import iconSparkle from '@/assets/icons/prepare-sparkle.svg'
@@ -138,6 +140,8 @@ function PrepareBody({ program, group }: { program: ProgramDetail; group: Group 
   })
   const current: Pick<MyApplicationDetail, 'applicationId' | 'participantCount' | 'companionCount' | 'cares'> | null =
     prepared?.application ?? existing.data ?? null
+  // 신청이 생기면(준비 시작 또는 이어 쓰기) AI가 신청서·문의 문자·통화 대본을 써요.
+  const ai = useApplicationDocuments(isDirect ? null : (current?.applicationId ?? null))
 
   const prepare = useMutation({
     mutationFn: () =>
@@ -235,6 +239,12 @@ function PrepareBody({ program, group }: { program: ProgramDetail; group: Group 
     .filter(Boolean)
     .join('\n')
 
+  // AI가 쓴 서류가 있으면 그 내용을, 없거나 실패하면 위의 기본 문구를 씁니다.
+  const scriptText = ai.callScript?.content ?? script
+  const smsText = ai.inquiry?.content ?? sms
+  const formCopyText = ai.form?.content ?? formText
+  const aiFormBody = ai.form ? stripTitle(ai.form.content, '프로그램 참가 신청서') : null
+
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -285,6 +295,22 @@ function PrepareBody({ program, group }: { program: ProgramDetail; group: Group 
 
           {eligibility.isLoading ? (
             <p className="text-xs text-gray-400">조건을 확인하는 중이에요</p>
+          ) : ai.docs && ai.docs.confirmed.length + ai.docs.toAsk.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {ai.docs.confirmed.map((text, idx) => (
+                <span key={`c-${idx}`} className="flex h-[26px] items-center rounded-[7px] bg-brand-soft px-2 text-xs font-medium text-brand">
+                  공고에 있어요 · {text}
+                </span>
+              ))}
+              {ai.docs.toAsk.map((text, idx) => (
+                <span key={`a-${idx}`} className="flex h-[26px] items-center rounded-[7px] bg-amber-50 px-2 text-xs font-medium text-amber-500">
+                  물어봐야 해요 · {text}
+                </span>
+              ))}
+              {reasons?.capacityExceeded && (
+                <span className="flex h-[26px] items-center rounded-[7px] bg-red-50 px-2 text-xs font-medium text-red-500">정원을 넘어요</span>
+              )}
+            </div>
           ) : reasons ? (
             <div className="flex flex-wrap gap-1.5">
               {reasons.items.map((i) => (
@@ -350,33 +376,46 @@ function PrepareBody({ program, group }: { program: ProgramDetail; group: Group 
         <section className="flex flex-col gap-2.5">
           <div className="flex items-center gap-1.5">
             <img src={iconSparkle} alt="" className="size-4" />
-            <h2 className="flex-1 text-[15px] font-bold text-gray-900">자동으로 채운 신청서</h2>
-            <button className="text-[12.5px] font-medium text-brand" onClick={() => copy(formText)}>
+            <h2 className="flex-1 text-[15px] font-bold text-gray-900">{ai.form ? 'AI가 쓴 신청서' : '자동으로 채운 신청서'}</h2>
+            {current && !isDirect && (
+              <button className="text-[12.5px] font-medium text-gray-500 disabled:text-gray-300" disabled={ai.writing} onClick={ai.rewrite}>
+                다시 쓰기
+              </button>
+            )}
+            {ai.form && <PdfButton doc={ai.form} onDownload={ai.downloadPdf} downloadingId={ai.downloadingId} />}
+            <button className="text-[12.5px] font-medium text-brand" onClick={() => copy(formCopyText)}>
               복사하기
             </button>
           </div>
-          <div className="flex flex-col rounded-lg border border-gray-200 bg-white px-8 py-7">
+          {!isDirect && <AiDocStatus started={!!current} writing={ai.writing} failed={ai.failed} aiWritten={ai.docs?.aiWritten ?? null} />}
+          <div className={cn('flex flex-col rounded-lg border border-gray-200 bg-white px-8 py-7 transition-opacity', ai.writing && 'opacity-50')}>
             <p className="text-center text-[18px] font-bold text-gray-900">프로그램 참가 신청서</p>
             <div className="h-[18px]" />
-            <FormRow label="신청 기관" first>
-              {orgName}
-            </FormRow>
-            <FormRow label="담당자">
-              <span className="flex items-center gap-1.5">
-                {contactName}
-                {contactPhone ? (
-                  <span>{contactPhone}</span>
-                ) : (
-                  <span className="rounded bg-brand-soft px-1.5 font-medium text-brand">[직접 입력: 연락처]</span>
-                )}
-              </span>
-            </FormRow>
-            <FormRow label="참가 인원">
-              이용자 {people.p}명, 동반 인력 {people.c}명 (총 {total}명)
-            </FormRow>
-            <FormRow label="필요한 지원">{group.supports.map((s) => supportText(s)).join(', ') || '없음'}</FormRow>
-            {careNotes.length > 0 && <FormRow label="개별 케어">{careNotes.join(' / ')}</FormRow>}
-            <FormRow label="미리 여쭐 점">{askItems.length ? `${askItems.join(', ')} 지원이 가능한지 확인 부탁드려요.` : '없음'}</FormRow>
+            {aiFormBody != null ? (
+              <p className="text-[13.5px] leading-[1.7] whitespace-pre-line text-gray-900">{aiFormBody}</p>
+            ) : (
+              <>
+                <FormRow label="신청 기관" first>
+                  {orgName}
+                </FormRow>
+                <FormRow label="담당자">
+                  <span className="flex items-center gap-1.5">
+                    {contactName}
+                    {contactPhone ? (
+                      <span>{contactPhone}</span>
+                    ) : (
+                      <span className="rounded bg-brand-soft px-1.5 font-medium text-brand">[직접 입력: 연락처]</span>
+                    )}
+                  </span>
+                </FormRow>
+                <FormRow label="참가 인원">
+                  이용자 {people.p}명, 동반 인력 {people.c}명 (총 {total}명)
+                </FormRow>
+                <FormRow label="필요한 지원">{group.supports.map((s) => supportText(s)).join(', ') || '없음'}</FormRow>
+                {careNotes.length > 0 && <FormRow label="개별 케어">{careNotes.join(' / ')}</FormRow>}
+                <FormRow label="미리 여쭐 점">{askItems.length ? `${askItems.join(', ')} 지원이 가능한지 확인 부탁드려요.` : '없음'}</FormRow>
+              </>
+            )}
           </div>
         </section>
       </div>
@@ -459,25 +498,31 @@ function PrepareBody({ program, group }: { program: ProgramDetail; group: Group 
                 </p>
               )}
               <div className="flex flex-col gap-1.5 rounded-xl bg-white px-3.5 py-3">
-                <p className="text-[12.5px] font-medium text-gray-500">{channel === 'PHONE' ? '통화할 때 이렇게 말해요' : '접수할 때 이렇게 적어요'}</p>
-                <p className="text-[13.5px] leading-[1.6] text-gray-900">{script}</p>
+                <div className="flex items-center gap-2">
+                  <p className="flex-1 text-[12.5px] font-medium text-gray-500">{channel === 'PHONE' ? '통화할 때 이렇게 말해요' : '접수할 때 이렇게 적어요'}</p>
+                  {ai.writing && <span aria-label="AI가 쓰는 중" className="inline-block size-3.5 animate-spin rounded-full border-2 border-gray-300 border-r-transparent" />}
+                  {ai.callScript && <PdfButton doc={ai.callScript} onDownload={ai.downloadPdf} downloadingId={ai.downloadingId} />}
+                </div>
+                <p className={cn('text-[13.5px] leading-[1.6] whitespace-pre-line text-gray-900', ai.writing && 'opacity-50')}>{scriptText}</p>
               </div>
             </section>
 
             <section className="flex flex-col gap-3 rounded-2xl bg-gray-50 px-5 py-[18px]">
               <div className="flex items-center gap-1.5">
                 <img src={iconSparkle} alt="" className="size-4" />
-                <h2 className="text-[15px] font-bold text-gray-900">문의 문자</h2>
+                <h2 className="flex-1 text-[15px] font-bold text-gray-900">문의 문자</h2>
+                {ai.writing && <span aria-label="AI가 쓰는 중" className="inline-block size-3.5 animate-spin rounded-full border-2 border-gray-300 border-r-transparent" />}
+                {ai.inquiry && <PdfButton doc={ai.inquiry} onDownload={ai.downloadPdf} downloadingId={ai.downloadingId} />}
               </div>
-              <div className="rounded-xl bg-white px-3.5 py-3">
-                <p className="text-[13.5px] leading-[1.6] text-gray-700">{sms}</p>
+              <div className={cn('rounded-xl bg-white px-3.5 py-3', ai.writing && 'opacity-50')}>
+                <p className="text-[13.5px] leading-[1.6] whitespace-pre-line text-gray-700">{smsText}</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="h-[34px] flex-1 rounded-[17px]" onClick={() => copy(sms)}>
+                <Button variant="outline" className="h-[34px] flex-1 rounded-[17px]" onClick={() => copy(smsText)}>
                   복사하기
                 </Button>
                 <a
-                  href={info.contactPhone ? `sms:${info.contactPhone}?body=${encodeURIComponent(sms)}` : undefined}
+                  href={info.contactPhone ? `sms:${info.contactPhone}?body=${encodeURIComponent(smsText)}` : undefined}
                   aria-disabled={!info.contactPhone}
                   className={cn(
                     'flex h-[34px] flex-1 items-center justify-center rounded-[17px] border border-gray-200 bg-white text-[13px] font-medium',
@@ -521,6 +566,12 @@ function PrepareBody({ program, group }: { program: ProgramDetail; group: Group 
       </div>
     </div>
   )
+}
+
+/** AI 신청서 첫 줄이 제목이면 카드 제목과 겹치지 않게 뺍니다. */
+function stripTitle(content: string, title: string) {
+  const lines = content.trim().split('\n')
+  return lines[0]?.trim().replace(/^#+\s*/, '') === title ? lines.slice(1).join('\n').trim() : content.trim()
 }
 
 function FormRow({ label, first, children }: { label: string; first?: boolean; children: ReactNode }) {

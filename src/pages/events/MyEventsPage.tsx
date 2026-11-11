@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { eventApi } from '@/api/endpoints'
 import type { ProgramStatus } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, PageHeader, UnderlineTabs } from '@/components/ui'
+import { Button, EmptyState, ErrorState, LoadingState, PageHeader, UnderlineTabs, LoadMore } from '@/components/ui'
 import { formatShortDate } from '@/lib/format'
 import { qk } from '@/lib/queryKeys'
 import { EventRow } from './list/EventRow'
@@ -41,8 +41,7 @@ export default function MyEventsPage() {
           value={d ? `${d.upcomingParticipantCount + d.upcomingCompanionCount}명` : '-'}
           hint={d && d.upcomingCompanionCount > 0 ? `동반 ${d.upcomingCompanionCount}명 포함` : undefined}
         />
-        {/* 후기 API가 아직 없어 값을 비워 둡니다. */}
-        <StatCard label="받은 후기" value="-" />
+        <StatCard label="받은 후기" value={d ? `${d.reviewCount}개` : '-'} />
       </div>
 
       <UnderlineTabs<Tab>
@@ -114,13 +113,7 @@ function EventList({ tab }: { tab: Tab }) {
       {events.map((event) => (
         <EventRow key={event.eventId} event={event} />
       ))}
-      {query.hasNextPage && (
-        <div className="flex justify-center pt-1">
-          <Button variant="outline" loading={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>
-            더 보기
-          </Button>
-        </div>
-      )}
+      <LoadMore query={query} className="pt-1" />
     </div>
   )
 }
@@ -148,6 +141,20 @@ function RecentEnded() {
             {formatShortDate(event.startAt)} · {event.applicationOrgCount}개 기관 · {event.participantCount}명 참여
           </p>
           <div className="flex-1" />
+          <span className="shrink-0 text-[13px] text-gray-500">
+            {event.reviewCount > 0 ? (
+              <>
+                {event.averageRating != null && (
+                  <span className="font-bold text-gray-900">
+                    <span className="text-amber-400">★</span> {event.averageRating.toFixed(1)}
+                  </span>
+                )}
+                {event.averageRating != null ? ' · ' : ''}후기 {event.reviewCount}개
+              </>
+            ) : (
+              '아직 후기가 없어요'
+            )}
+          </span>
           <Link
             to={`/app/events/${event.eventId}/reviews`}
             className="shrink-0 text-[13px] font-medium text-brand hover:text-brand-strong"

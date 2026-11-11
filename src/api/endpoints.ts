@@ -2,10 +2,19 @@
 import { api, http } from './client'
 import type {
   Application,
+  ApplicationDocuments,
+  ProgramReview,
+  Promotion,
+  ReceivedReviews,
+  Review,
+  ReviewImage,
+  ReviewReplyResult,
+  ReviewRequest,
+  ReviewSort,
+  ReviewSummary,
   CarePerson,
   CarePersonCreateRequest,
   CarePersonUpdateRequest,
-  CityCount,
   DirectApplicationRequest,
   DistrictDetail,
   DistrictStats,
@@ -93,7 +102,8 @@ export const carePersonApi = {
 export const programApi = {
   search: (params: ProgramSearchParams = {}) =>
     api.get<PageResponse<ProgramSummary>>('/programs', { params }),
-  cities: () => api.get<CityCount[]>('/programs/cities'),
+  reviews: (programId: number, params: PageParams = {}) =>
+    api.get<PageResponse<ProgramReview>>(`/programs/${programId}/reviews`, { params }),
   detail: (programId: number, groupId?: number) =>
     api.get<ProgramDetail>(`/programs/${programId}`, { params: { groupId } }),
   eligible: (params: EligibleProgramParams) =>
@@ -152,22 +162,20 @@ export const eventApi = {
   ) => api.patch<EventApplicationDetail>(`/events/${eventId}/applications/${applicationId}/status`, body),
   needs: (eventId: number) => api.get<EventNeeds>(`/events/${eventId}/needs`),
 
+  reviews: (eventId: number, params: { sort?: ReviewSort; photoOnly?: boolean } & PageParams = {}) =>
+    api.get<ReceivedReviews>(`/events/${eventId}/reviews`, { params }),
+  reviewSummary: (eventId: number) => api.get<ReviewSummary>(`/events/${eventId}/reviews/summary`),
+  writePromotion: (eventId: number) => api.post<Promotion>(`/events/${eventId}/promotions`),
+  /** 쉬운 말 홍보문을 넣은 A4 포스터 PDF를 내려받습니다. easy를 비우면 서버가 초안을 넣습니다. */
+  downloadPoster: (eventId: number, easy?: string) =>
+    downloadFile(() => http.post<Blob>(`/events/${eventId}/promotions/poster`, easy ? { easy } : {}, { responseType: 'blob' }), `poster-${eventId}.pdf`),
+
   /** 신청 명단 엑셀 파일을 내려받습니다. */
-  async exportApplications(eventId: number, status?: ApplicationStatus[]) {
-    const res = await http.get<Blob>(`/events/${eventId}/applications/export`, {
-      params: { format: 'xlsx', status },
-      responseType: 'blob',
-    })
-    const disposition = String(res.headers['content-disposition'] ?? '')
-    const match = /filename\*=UTF-8''([^;]+)/i.exec(disposition) ?? /filename="?([^";]+)"?/i.exec(disposition)
-    const fileName = match ? decodeURIComponent(match[1]) : `applications-${eventId}.xlsx`
-    const url = URL.createObjectURL(res.data)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    a.click()
-    URL.revokeObjectURL(url)
-  },
+  exportApplications: (eventId: number, status?: ApplicationStatus[]) =>
+    downloadFile(
+      () => http.get<Blob>(`/events/${eventId}/applications/export`, { params: { format: 'xlsx', status }, responseType: 'blob' }),
+      `applications-${eventId}.xlsx`,
+    ),
 }
 
 // ---------- 신청 ----------
@@ -185,6 +193,46 @@ export const applicationApi = {
   get: (applicationId: number) => api.get<MyApplicationDetail>(`/applications/${applicationId}`),
   applyDirect: (programId: number, body: DirectApplicationRequest) =>
     api.post<Application>(`/programs/${programId}/applications`, body),
+
+  /** AI가 신청서·문의 문자·통화 대본을 씁니다. 다시 부르면 새로 씁니다. */
+  writeDocuments: (applicationId: number) =>
+    api.post<ApplicationDocuments>(`/applications/${applicationId}/documents`),
+  downloadDocumentPdf: (applicationId: number, documentId: number) =>
+    downloadFile(
+      () => http.get<Blob>(`/applications/${applicationId}/documents/${documentId}/pdf`, { responseType: 'blob' }),
+      `application-${applicationId}-${documentId}.pdf`,
+    ),
+
+  writeReview: (applicationId: number, body: ReviewRequest) =>
+    api.post<Review>(`/applications/${applicationId}/review`, body),
+}
+
+// ---------- 후기 ----------
+export const reviewApi = {
+  /** 후기 쓰기와 같은 내용을 통째로 다시 보냅니다. 사진은 그대로 둡니다. */
+  update: (reviewId: number, body: ReviewRequest) => api.put<Review>(`/reviews/${reviewId}`, body),
+  uploadImages: (reviewId: number, files: File[]) => {
+    const form = new FormData()
+    files.forEach((file) => form.append('images', file))
+    return api.post<ReviewImage[]>(`/reviews/${reviewId}/images`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+  reply: (reviewId: number, content: string) => api.post<ReviewReplyResult>(`/reviews/${reviewId}/reply`, { content }),
+}
+
+/** 파일 응답을 받아 브라우저에서 내려받게 합니다. 파일 이름은 Content-Disposition을 따릅니다. */
+async function downloadFile(request: () => Promise<{ data: Blob; headers: Record<string, unknown> }>, fallbackName: string) {
+  const res = await request()
+  const disposition = String(res.headers['content-disposition'] ?? '')
+  const match = /filename\*=UTF-8''([^;]+)/i.exec(disposition) ?? /filename="?([^";]+)"?/i.exec(disposition)
+  const fileName = match ? decodeURIComponent(match[1]) : fallbackName
+  const url = URL.createObjectURL(res.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 // ---------- 알림 ----------

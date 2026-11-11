@@ -70,11 +70,3 @@ export function monthLabel(value: string, style: 'relative' | 'plain' = 'relativ
   return y === new Date().getFullYear() ? `${m}월` : `${y}년 ${m}월`
 }
 
-/** 장소 앞에 시·군을 붙입니다. 용인시 밖 행사가 섞여도 어디인지 바로 보이게 (예: 수원시 · 빛누리아트홀). */
-export function placeLabel(program: { city?: string | null; venue?: { name: string } | null }, empty = '장소 미정'): string {
-  const name = program.venue?.name
-  const city = program.city
-  if (!name) return city ? `${city} · ${empty}` : empty
-  if (!city || name.includes(city) || name.includes(city.slice(0, -1))) return name
-  return `${city} · ${name}`
-}
