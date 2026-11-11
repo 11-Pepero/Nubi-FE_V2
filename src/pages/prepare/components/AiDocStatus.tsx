@@ -1,4 +1,5 @@
 import type { ApplicationDocument } from '@/api/types'
+import { AiProgress } from '@/components/ui'
 
 /** 신청서 위에 붙는 AI 상태 한 줄: 쓰는 중 / 실패(기본 문구) / AI 없이 쓴 초안 / 준비 전 안내 */
 export function AiDocStatus({
@@ -14,10 +15,16 @@ export function AiDocStatus({
 }) {
   if (writing) {
     return (
-      <p role="status" className="flex items-center gap-2 rounded-xl bg-brand-soft px-4 py-2.5 text-[13px] font-medium text-brand">
-        <span aria-hidden className="inline-block size-3.5 animate-spin rounded-full border-2 border-brand border-r-transparent" />
-        AI가 신청서를 쓰고 있어요… 몇 초 걸릴 수 있어요.
-      </p>
+      <AiProgress
+        title="AI가 신청서를 쓰고 있어요"
+        expectedMs={9_000}
+        steps={[
+          '신청 내용과 공고를 맞춰 보고 있어요',
+          '공고에 있는 지원과 물어볼 지원을 나누고 있어요',
+          '참가 신청서를 쓰고 있어요',
+          '문의 문자와 통화 대본을 쓰고 있어요',
+        ]}
+      />
     )
   }
   if (failed) {

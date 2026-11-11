@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { eventApi } from '@/api/endpoints'
 import { errorMessage } from '@/api/client'
 import type { Promotion } from '@/api/types'
-import { Button, SegmentedTabs, useToast } from '@/components/ui'
+import { AiProgress, Button, SegmentedTabs, useToast } from '@/components/ui'
 import { cn } from '@/lib/format'
 import { SectionCard, textareaClass } from '../form/fields'
 
@@ -31,6 +31,19 @@ function easyStats(text: string) {
   const lineCount = text.trim() ? lines.length : 0
   const longLines = lines.filter((l) => [...l].length > EASY_LINE_MAX).length
   return { lineCount, longLines, chars: [...text].length }
+}
+
+// AI 홍보문은 15~20초쯤 걸려요.
+const PROMOTION_PROGRESS = {
+  title: 'AI가 홍보문을 쓰고 있어요',
+  expectedMs: 18_000,
+  steps: [
+    '행사 정보와 제공하는 지원을 읽고 있어요',
+    '일반 홍보문을 쓰고 있어요',
+    '쉬운 말로 한 줄씩 다듬고 있어요',
+    '문자용 짧은 문구를 만들고 있어요',
+    '마지막으로 한 번 더 살펴보고 있어요',
+  ],
 }
 
 export function PromotionSection({ eventId, dirty }: { eventId: number; dirty: boolean }) {
@@ -102,10 +115,7 @@ export function PromotionSection({ eventId, dirty }: { eventId: number; dirty: b
       {!result ? (
         <div className="flex w-full flex-col items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-8">
           {write.isPending ? (
-            <p className="flex items-center gap-2 text-[13.5px] text-gray-700">
-              <span className="size-3.5 animate-spin rounded-full border-2 border-brand border-r-transparent" />
-              AI가 홍보문을 쓰고 있어요…
-            </p>
+            <AiProgress {...PROMOTION_PROGRESS} className="max-w-md" />
           ) : (
             <>
               <p className="text-[13.5px] text-gray-700">일반, 쉬운 말, 문자용 홍보문을 한 번에 써 드려요.</p>
@@ -145,10 +155,9 @@ export function PromotionSection({ eventId, dirty }: { eventId: number; dirty: b
               onChange={(e) => setTexts((t) => ({ ...t, [tab]: e.target.value }))}
             />
             {write.isPending && (
-              <p className="absolute inset-0 flex items-center justify-center gap-2 text-[13.5px] text-gray-700">
-                <span className="size-3.5 animate-spin rounded-full border-2 border-brand border-r-transparent" />
-                AI가 홍보문을 쓰고 있어요…
-              </p>
+              <div className="absolute inset-0 flex items-center justify-center p-6">
+                <AiProgress {...PROMOTION_PROGRESS} className="max-w-md bg-white/95 shadow-sm" />
+              </div>
             )}
           </div>
 

@@ -261,3 +261,39 @@
   outline-offset: 4px;
   border-radius: 6px;
 }
+
+/* ---------- AI 진행 표시 (AiProgress) ---------- */
+@keyframes nubi-ai-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(0.72) rotate(18deg); opacity: 0.55; }
+}
+@keyframes nubi-ai-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes nubi-ai-shimmer {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+@keyframes nubi-ai-step-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes nubi-ai-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-brand) 0%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-brand) 12%, transparent); }
+}
+.nubi-ai-sparkle { animation: nubi-ai-float 2.4s ease-in-out infinite; }
+.nubi-ai-star { transform-box: fill-box; transform-origin: center; animation: nubi-ai-twinkle 1.6s ease-in-out infinite; }
+.nubi-ai-star-2 { animation-delay: 0.35s; }
+.nubi-ai-star-3 { animation-delay: 0.7s; }
+.nubi-ai-bar {
+  background: linear-gradient(90deg, var(--color-brand), #8b5cf6, var(--color-brand));
+  background-size: 200% 100%;
+  animation: nubi-ai-shimmer 1.8s linear infinite;
+}
+.nubi-ai-step { animation: nubi-ai-step-in 0.35s ease-out; }
+.nubi-ai-card { animation: nubi-ai-glow 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .nubi-ai-sparkle, .nubi-ai-star, .nubi-ai-bar, .nubi-ai-step, .nubi-ai-card { animation: none; }
+}
