@@ -41,8 +41,7 @@ export default function MyEventsPage() {
           value={d ? `${d.upcomingParticipantCount + d.upcomingCompanionCount}명` : '-'}
           hint={d && d.upcomingCompanionCount > 0 ? `동반 ${d.upcomingCompanionCount}명 포함` : undefined}
         />
-        {/* 후기 API가 아직 없어 값을 비워 둡니다. */}
-        <StatCard label="받은 후기" value="-" />
+        <StatCard label="받은 후기" value={d ? `${d.reviewCount}개` : '-'} />
       </div>
 
       <UnderlineTabs<Tab>
@@ -148,6 +147,20 @@ function RecentEnded() {
             {formatShortDate(event.startAt)} · {event.applicationOrgCount}개 기관 · {event.participantCount}명 참여
           </p>
           <div className="flex-1" />
+          <span className="shrink-0 text-[13px] text-gray-500">
+            {event.reviewCount > 0 ? (
+              <>
+                {event.averageRating != null && (
+                  <span className="font-bold text-gray-900">
+                    <span className="text-amber-400">★</span> {event.averageRating.toFixed(1)}
+                  </span>
+                )}
+                {event.averageRating != null ? ' · ' : ''}후기 {event.reviewCount}개
+              </>
+            ) : (
+              '아직 후기가 없어요'
+            )}
+          </span>
           <Link
             to={`/app/events/${event.eventId}/reviews`}
             className="shrink-0 text-[13px] font-medium text-brand hover:text-brand-strong"
