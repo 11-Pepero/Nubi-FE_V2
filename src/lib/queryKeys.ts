@@ -8,7 +8,7 @@ export const qk = {
   carePersons: (params?: object) => ['care-persons', params ?? {}] as const,
   carePerson: (id: number) => ['care-persons', 'detail', id] as const,
   programs: (params?: object) => ['programs', params ?? {}] as const,
-  programCities: ['programs', 'cities'] as const,
+  programReviews: (id: number) => ['programs', 'reviews', id] as const,
   program: (id: number, groupId?: number) => ['programs', 'detail', id, groupId ?? null] as const,
   eligible: (params: object) => ['programs', 'eligible', params] as const,
   eligibility: (programId: number, groupId: number, careIds?: number[]) =>
@@ -21,6 +21,8 @@ export const qk = {
   eventApplication: (eventId: number, applicationId: number) =>
     ['events', eventId, 'applications', 'detail', applicationId] as const,
   eventNeeds: (eventId: number) => ['events', eventId, 'needs'] as const,
+  eventReviews: (eventId: number, params?: object) => ['events', eventId, 'reviews', params ?? {}] as const,
+  eventReviewSummary: (eventId: number) => ['events', eventId, 'reviews', 'summary'] as const,
   myApplications: (params?: object) => ['applications', 'list', params ?? {}] as const,
   myApplicationSummary: ['applications', 'summary'] as const,
   myApplication: (id: number) => ['applications', 'detail', id] as const,

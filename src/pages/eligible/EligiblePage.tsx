@@ -4,13 +4,12 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import { carePersonApi, programApi } from '@/api/endpoints'
 import type { EligibilityResult } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, PageHeader, SegmentedTabs } from '@/components/ui'
+import { Button, EmptyState, ErrorState, LoadingState, PageHeader, SegmentedTabs, LoadMore } from '@/components/ui'
 import { useSelectedGroup } from '@/lib/selectedGroup'
 import { qk } from '@/lib/queryKeys'
 import { cn, supportText, toYearMonth } from '@/lib/format'
 import searchIcon from '@/assets/icons/eligible-search.svg'
 import { Dropdown, MenuItem } from './components/Dropdown'
-import { RegionDropdown } from './components/RegionDropdown'
 import { ProgramCard } from './components/ProgramCard'
 import { Tag } from './components/Tag'
 import { useProgramApply } from './components/useProgramApply'
@@ -30,7 +29,6 @@ function useEligibleFilters() {
   const rawResult = sp.get('result')
   const result: ResultTab = rawResult === 'ELIGIBLE' || rawResult === 'CHECK' ? rawResult : 'ALL'
   const q = sp.get('q') ?? ''
-  const city = sp.get('city') || undefined
 
   const update = (patch: Record<string, string | null>) =>
     setSp(
@@ -42,13 +40,13 @@ function useEligibleFilters() {
       { replace: true },
     )
 
-  return { sp, careIds, month, result, q, city, update }
+  return { sp, careIds, month, result, q, update }
 }
 
 export default function EligiblePage() {
   const { programId: openProgramId } = useParams()
   const { groups, selectedGroup, selectGroup, isLoading: groupsLoading } = useSelectedGroup()
-  const { sp, careIds, month, result, q, city, update } = useEligibleFilters()
+  const { sp, careIds, month, result, q, update } = useEligibleFilters()
   const groupId = selectedGroup?.id
 
   // 검색어는 입력이 멈추면 주소에 반영합니다.
@@ -81,7 +79,7 @@ export default function EligiblePage() {
 
   // ---------- 목록 ----------
   const monthParam = month === ALL_MONTHS ? undefined : month
-  const base = { groupId: groupId ?? 0, careIds: careIds.length ? careIds : undefined, month: monthParam, city }
+  const base = { groupId: groupId ?? 0, careIds: careIds.length ? careIds : undefined, month: monthParam }
 
   const listQuery = useInfiniteQuery({
     queryKey: qk.eligible({ ...base, result, size: PAGE_SIZE }),
@@ -254,7 +252,6 @@ export default function EligiblePage() {
               )}
             </Dropdown>
 
-            <RegionDropdown value={{ city }} onChange={(r) => update({ city: r.city ?? null })} />
           </div>
 
           {/* 조건 줄 */}
@@ -314,13 +311,7 @@ export default function EligiblePage() {
                   />
                 ))}
               </div>
-              {listQuery.hasNextPage && (
-                <div className="flex justify-center pt-6">
-                  <Button variant="outline" loading={listQuery.isFetchingNextPage} onClick={() => listQuery.fetchNextPage()}>
-                    더 보기
-                  </Button>
-                </div>
-              )}
+              <LoadMore query={listQuery} className="pt-6" />
             </>
           )}
         </>

@@ -322,15 +322,12 @@ export interface ProgramSummary {
   status: ProgramStatus
   /** 수집 공고는 null (신청 방법을 모름) */
   applyMethod: ApplyMethod | null
-  startAt: DateTimeString
+  /** 장애인복지관 상시 프로그램은 null */
+  startAt: DateTimeString | null
   endAt: DateTimeString | null
   deadlineAt: DateTimeString | null
   capacity: number | null
   thumbnailUrl: string | null
-  /** 수집 공고의 원문 페이지 (원문 보기). 기관이 올린 행사는 null */
-  sourceUrl: string | null
-  /** 경기도 시·군 이름 (예: 용인시). 모르면 null */
-  city: string | null
   venue: VenueSummary | null
 }
 
@@ -344,13 +341,11 @@ export interface ProgramDetail {
   status: ProgramStatus
   /** 수집 공고는 null (신청 방법을 모름) */
   applyMethod: ApplyMethod | null
+  /** 수집 공고는 원문 페이지 주소(원문 보기) */
   applyUrl: string | null
-  /** 수집 공고의 원문 페이지 (원문 보기). 기관이 올린 행사는 null */
-  sourceUrl: string | null
   contactPhone: string | null
-  /** 경기도 시·군 이름 (예: 용인시). 모르면 null */
-  city: string | null
-  startAt: DateTimeString
+  /** 장애인복지관 상시 프로그램은 null */
+  startAt: DateTimeString | null
   endAt: DateTimeString | null
   deadlineAt: DateTimeString | null
   capacity: number | null
@@ -373,8 +368,6 @@ export interface ProgramSearchParams extends PageParams {
   keyword?: string
   category?: ProgramCategory
   district?: District
-  /** 경기도 시·군 이름 (예: 수원시) */
-  city?: string
   month?: YearMonthString
   applyMethod?: ApplyMethod
   accessibleOnly?: boolean
@@ -385,14 +378,6 @@ export interface EligibleProgramParams extends PageParams {
   careIds?: number[]
   result?: EligibilityResult
   month?: YearMonthString
-  /** 경기도 시·군 이름 (예: 수원시) */
-  city?: string
-}
-
-/** 지역 필터 항목 */
-export interface CityCount {
-  city: string
-  count: number
 }
 
 // ---------- 행사 관리 ----------
@@ -424,6 +409,8 @@ export interface EventDashboard {
   newApplicationCount: number
   upcomingParticipantCount: number
   upcomingCompanionCount: number
+  /** 내가 연 행사에 달린 받은 후기 수 */
+  reviewCount: number
 }
 
 export interface EventSummary {
@@ -440,6 +427,9 @@ export interface EventSummary {
   applicationOrgCount: number
   participantCount: number
   newApplicationCount: number
+  reviewCount: number
+  /** 소수 첫째 자리. 후기가 없으면 null */
+  averageRating: number | null
 }
 
 // ---------- 신청 ----------
@@ -534,6 +524,8 @@ export interface MyApplicationSummary {
   status: ApplicationStatus
   step: ApplicationStep
   submittedAt: DateTimeString | null
+  /** 이미 남긴 후기. 없으면 null */
+  reviewId: number | null
 }
 
 export interface MyApplicationCount {
@@ -543,6 +535,8 @@ export interface MyApplicationCount {
   upcoming: number
   upcomingThisWeek: number
   attended: number
+  /** 후기를 쓸 수 있는데 아직 안 쓴 신청 수 */
+  reviewPending: number
   statusCounts: Partial<Record<ApplicationStatus, number>>
 }
 
@@ -716,4 +710,141 @@ export interface Markers {
     latitude: number
     longitude: number
   }[]
+}
+
+// ---------- 후기 ----------
+export type CheckAnswer = 'YES' | 'NO' | 'UNKNOWN'
+export type ReviewReaction = 'ENJOYED' | 'WANT_AGAIN' | 'HAD_DIFFICULTY' | 'SHORT_BREAKS' | 'LONG_DISTANCE'
+export type ReviewSort = 'LATEST' | 'RATING_ASC'
+
+export interface ReviewRequest {
+  rating: number
+  checks?: { supportTagId: number; answer: CheckAnswer }[]
+  mismatchNote?: string
+  reactions?: ReviewReaction[]
+  content?: string
+  /** 비우면 공개 */
+  isPublic?: boolean
+}
+
+export interface ReviewCheckItem {
+  supportTagId: number
+  code: string
+  label: string
+  answer: CheckAnswer
+}
+
+export interface Review {
+  reviewId: number
+  applicationId: number
+  programId: number
+  programTitle: string
+  rating: number
+  checks: ReviewCheckItem[]
+  mismatchNote: string | null
+  reactions: ReviewReaction[]
+  content: string | null
+  isPublic: boolean
+  createdAt: DateTimeString
+}
+
+export interface ReviewImage {
+  imageId: number
+  url: string
+  sortOrder: number
+}
+
+export interface ReviewReplyInfo {
+  organizationName: string
+  content: string
+  createdAt: DateTimeString
+}
+
+/** 후기 목록 한 줄 (프로그램 후기 목록, 받은 후기 목록) */
+export interface ProgramReview {
+  reviewId: number
+  organizationName: string
+  rating: number
+  participantCount: number
+  companionCount: number
+  checks: ReviewCheckItem[]
+  mismatchNote: string | null
+  reactions: ReviewReaction[]
+  content: string | null
+  imageUrls: string[]
+  isPublic: boolean
+  reply: ReviewReplyInfo | null
+  createdAt: DateTimeString
+}
+
+export interface ReceivedReviews {
+  stats: {
+    organizationCount: number
+    participantCount: number
+    companionCount: number
+    reviewCount: number
+    averageRating: number | null
+    awaitingReplyCount: number
+  }
+  checks: { supportTagId: number; code: string; label: string; yesCount: number; noCount: number; unknownCount: number }[]
+  reactions: { reaction: ReviewReaction; count: number }[]
+  reviews: PageResponse<ProgramReview>
+}
+
+export interface ReviewReplyResult {
+  replyId: number
+  reviewId: number
+  organizationName: string
+  content: string
+  createdAt: DateTimeString
+}
+
+export interface ReviewSummary {
+  eventId: number
+  reviewCount: number
+  /** false면 AI 없이 집계로 만든 요약 */
+  aiWritten: boolean
+  summary: string | null
+  improvements: string[]
+  conditionAlerts: {
+    supportTagId: number
+    code: string
+    label: string
+    yesCount: number
+    noCount: number
+    message: string
+  }[]
+}
+
+// ---------- AI 신청서 ----------
+export type DocumentType = 'FORM' | 'INQUIRY' | 'CALL_SCRIPT'
+
+export interface ApplicationDocument {
+  documentId: number
+  type: DocumentType
+  content: string
+  updatedAt: DateTimeString
+}
+
+export interface ApplicationDocuments {
+  applicationId: number
+  /** 공고에 있어요 */
+  confirmed: string[]
+  /** 물어봐야 해요 */
+  toAsk: string[]
+  /** false면 AI 없이 쓴 초안 */
+  aiWritten: boolean
+  documents: ApplicationDocument[]
+}
+
+// ---------- AI 홍보문 ----------
+export interface Promotion {
+  eventId: number
+  /** false면 AI 없이 쓴 초안 */
+  aiWritten: boolean
+  general: string
+  /** 쉬운 말 (발달장애인용) */
+  easy: string
+  /** 문자·포스터용 짧은 문구 */
+  sms: string
 }

@@ -1,13 +1,15 @@
 import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/format'
 
-type Variant = 'primary' | 'outline' | 'soft' | 'ghost' | 'dark' | 'danger'
+type Variant = 'primary' | 'tonal' | 'outline' | 'soft' | 'ghost' | 'dark' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
 
 const VARIANT: Record<Variant, string> = {
   primary: 'bg-brand text-white hover:bg-brand-strong disabled:bg-gray-200 disabled:text-gray-400',
   outline: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:text-gray-400',
   soft: 'bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:text-gray-400',
+  // 목록 안의 강조 버튼. 파란 글자에 옅은 바탕이라 한 화면에 여러 개 있어도 튀지 않아요.
+  tonal: 'bg-brand-soft text-brand hover:bg-brand hover:text-white disabled:bg-gray-100 disabled:text-gray-400',
   ghost: 'text-gray-500 hover:text-gray-900 hover:bg-gray-100 disabled:text-gray-300',
   dark: 'bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-300',
   danger: 'bg-white border border-gray-200 text-red-500 hover:bg-red-50',

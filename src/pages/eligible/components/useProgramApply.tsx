@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { programApi } from '@/api/endpoints'
 import type { ApplyMethod } from '@/api/types'
 import { useToast } from '@/components/ui'
 import { useSelectedGroup } from '@/lib/selectedGroup'
@@ -15,11 +16,12 @@ export function useProgramApply(careIds?: number[]) {
   const toast = useToast()
   const [target, setTarget] = useState<ApplyTarget | null>(null)
 
-  const apply = (program: ApplyTarget & { applyMethod: ApplyMethod | null; sourceUrl?: string | null }) => {
+  const apply = (program: ApplyTarget & { applyMethod: ApplyMethod | null; applyUrl?: string | null }) => {
     // 수집 공고는 신청 방법을 몰라서 앱에서 신청을 만들 수 없어요. 원문 공고로 보냅니다.
     if (!program.applyMethod) {
-      if (program.sourceUrl) window.open(program.sourceUrl, '_blank', 'noopener,noreferrer')
-      else toast.show('이 공고는 원문 링크가 없어요. 주최 기관에 직접 문의해 주세요.', { tone: 'error' })
+      void openOriginal(program.programId, program.applyUrl, () =>
+        toast.show('이 공고는 원문 링크가 없어요. 주최 기관에 직접 문의해 주세요.', { tone: 'error' }),
+      )
       return
     }
     if (!selectedGroup) {
@@ -39,4 +41,28 @@ export function useProgramApply(careIds?: number[]) {
   const modal = <DirectApplyModal target={target} group={selectedGroup} careIds={careIds} onClose={() => setTarget(null)} />
 
   return { apply, modal, group: selectedGroup }
+}
+
+/**
+ * 수집 공고의 원문 페이지를 새 창으로 엽니다. 목록 응답에는 주소가 없어 상세(applyUrl)를 불러옵니다.
+ * 팝업 차단을 피하려고 창을 먼저 열고 주소를 나중에 넣습니다.
+ */
+export async function openOriginal(programId: number, knownUrl?: string | null, onMissing?: () => void) {
+  if (knownUrl) {
+    window.open(knownUrl, '_blank', 'noopener,noreferrer')
+    return
+  }
+  const win = window.open('', '_blank')
+  try {
+    const detail = await programApi.detail(programId)
+    if (detail.applyUrl && win) {
+      win.opener = null
+      win.location.href = detail.applyUrl
+      return
+    }
+  } catch {
+    // 아래에서 안내
+  }
+  win?.close()
+  onMissing?.()
 }
