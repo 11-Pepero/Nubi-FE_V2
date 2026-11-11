@@ -1,5 +1,8 @@
 // 백엔드 enum을 화면에 보여줄 한국어로 바꿉니다.
 import type {
+  CheckAnswer,
+  DocumentType,
+  ReviewReaction,
   ApplicationStatus,
   ApplicationStep,
   ApplyMethod,
@@ -163,4 +166,27 @@ export const NOTIFICATION_TYPE_LABEL: Record<NotificationType, string> = {
   DEADLINE: '마감 알림',
   NEW_PROGRAM: '새 프로그램',
   NEW_REVIEW: '새 후기',
+}
+
+// ---------- 후기 (화면 15, 16) ----------
+export const REVIEW_REACTION_LABEL: Record<ReviewReaction, string> = {
+  ENJOYED: '즐거워했어요',
+  WANT_AGAIN: '다시 가고 싶어요',
+  HAD_DIFFICULTY: '조금 힘들어했어요',
+  SHORT_BREAKS: '쉬는 시간이 부족했어요',
+  LONG_DISTANCE: '이동 거리가 길었어요',
+}
+
+/** 공고에 적힌 대로였나요? */
+export const CHECK_ANSWER_LABEL: Record<CheckAnswer, string> = {
+  YES: '그랬어요',
+  NO: '아니었어요',
+  UNKNOWN: '몰라요',
+}
+
+// ---------- AI 신청서 (화면 08) ----------
+export const DOCUMENT_TYPE_LABEL: Record<DocumentType, string> = {
+  FORM: '프로그램 참가 신청서',
+  INQUIRY: '문의 문자',
+  CALL_SCRIPT: '통화할 때 이렇게 말해요',
 }
