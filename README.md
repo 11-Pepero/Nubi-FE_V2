@@ -26,6 +26,7 @@ Nubi 웹 프론트엔드 (기관 담당자용)
 ## 배포
 
 - Vercel: https://nubi-fe-v2.vercel.app
+- 백엔드: https://52-78-129-31.sslip.io (AWS EC2). `vercel.json`이 `/api`, `/uploads` 요청을 이 주소로 넘기므로 `VITE_API_BASE_URL`은 비워 두고, 백엔드 CORS 설정도 필요 없습니다.
 - 운영 배포는 main 브랜치를 따릅니다. 평소에는 develop에서 개발하고, 배포할 때 develop → main PR을 머지합니다.
 - develop에 머지하면 Vercel 미리보기(Preview) 주소에만 반영됩니다.
 - `vercel.json`은 안쪽 주소(`/app/programs` 등)로 바로 들어가거나 새로고침해도 화면이 뜨도록 모든 주소를 `index.html`로 보냅니다.
