@@ -27,6 +27,7 @@ import alertIcon from '@/assets/icons/eligible-alert.svg'
 import { ResultBadge, Tag } from './Tag'
 import { deadlineLabel, isDeadlineSoon, monthDay } from './programFormat'
 import { useProgramApply } from './useProgramApply'
+import { ProgramReviews } from './reviews/ProgramReviews'
 
 const FOOT_BTN =
   'inline-flex h-11 items-center justify-center rounded-[22px] px-4 text-[13.5px] font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed'
@@ -118,6 +119,7 @@ export function ProgramDetailPanel({
                   <p className="text-[13.5px] leading-[1.65] whitespace-pre-line text-gray-700">{program.description}</p>
                 </section>
               )}
+              <ProgramReviews programId={program.programId} />
             </div>
 
             <div className="flex gap-2 border-t border-gray-200 px-6 pt-3.5 pb-5">
