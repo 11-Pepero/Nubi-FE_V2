@@ -7,7 +7,8 @@ import { cn } from '@/lib/format'
 import buildingIcon from '@/assets/icons/programs-building.svg'
 import externalIcon from '@/assets/icons/programs-external.svg'
 import { ResultBadge, Tag } from '@/pages/eligible/components/Tag'
-import { cardDate, deadlineLabel, isDeadlineSoon, placeLabel } from '@/pages/eligible/components/programFormat'
+import { cardDate, deadlineLabel, isDeadlineSoon } from '@/pages/eligible/components/programFormat'
+import { openOriginal } from '@/pages/eligible/components/useProgramApply'
 
 /** 프로그램 탐색 목록 한 줄 (화면 04, 64px). */
 export function ProgramRow({
@@ -23,7 +24,7 @@ export function ProgramRow({
   onApply: () => void
 }) {
   const open = program.status === 'OPEN'
-  const meta = [program.hostName, regionText(program), cardDate(program.startAt)]
+  const meta = [program.hostName, program.venue?.district ? DISTRICT_LABEL[program.venue.district] : program.venue?.name, cardDate(program.startAt)]
     .filter(Boolean)
     .join('  ·  ')
 
@@ -69,17 +70,17 @@ export function ProgramRow({
         {open ? deadlineLabel(program.deadlineAt) : '마감'}
       </p>
 
-      {program.sourceUrl ? (
-        <a
-          href={program.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* 수집 공고(신청 방법 모름)는 원문 공고를, 그 밖에는 상세를 엽니다. */}
+      {!program.applyMethod ? (
+        <button
+          type="button"
+          onClick={() => void openOriginal(program.programId)}
           title="원문 공고 보기"
           aria-label={`${program.title} 원문 공고 새 창으로 보기`}
           className="shrink-0 rounded p-0.5 hover:bg-gray-200"
         >
           <img src={externalIcon} alt="" width={16} height={16} />
-        </a>
+        </button>
       ) : (
         <Link to={detailTo} aria-label={`${program.title} 자세히 보기`} className="shrink-0 rounded p-0.5 hover:bg-gray-200">
           <img src={externalIcon} alt="" width={16} height={16} />
@@ -107,9 +108,3 @@ export function ProgramRow({
   )
 }
 
-/** 용인시는 구 이름(수지구), 다른 시·군은 시·군과 장소 (수원시 · 빛누리아트홀) */
-function regionText(program: ProgramSummary): string | null {
-  if (program.venue?.district && (!program.city || program.city === '용인시')) return DISTRICT_LABEL[program.venue.district]
-  if (!program.venue && !program.city) return null
-  return placeLabel(program)
-}

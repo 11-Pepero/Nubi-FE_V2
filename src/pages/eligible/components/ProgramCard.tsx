@@ -7,7 +7,7 @@ import calendarIcon from '@/assets/icons/eligible-calendar.svg'
 import pinIcon from '@/assets/icons/eligible-pin.svg'
 import userIcon from '@/assets/icons/eligible-user.svg'
 import { ResultBadge, Tag } from './Tag'
-import { cardDateTime, deadlineLabel, isDeadlineSoon, placeLabel } from './programFormat'
+import { cardDateTime, deadlineLabel, isDeadlineSoon } from './programFormat'
 
 export interface ResultCounts {
   metCount: number
@@ -79,7 +79,7 @@ export function ProgramCard({
         </li>
         <li className="flex items-center gap-1.5">
           <img src={pinIcon} alt="" width={14} height={14} />
-          <span className="truncate">{placeLabel(program)}</span>
+          <span className="truncate">{program.venue?.name ?? '장소 미정'}</span>
         </li>
         <li className="flex items-center gap-1.5">
           <img src={userIcon} alt="" width={14} height={14} />
@@ -104,12 +104,6 @@ export function ProgramCard({
       <div className="mt-auto flex items-center gap-1.5 pt-0.5">
         {result && <ResultBadge result={result} size="pill" />}
         <span className="flex-1" />
-        {/* 신청 방법을 모르는 수집 공고는 신청 버튼이 이미 원문으로 가니 원문 링크를 또 두지 않아요. */}
-        {program.sourceUrl && program.applyMethod && (
-          <a href={program.sourceUrl} target="_blank" rel="noopener noreferrer" className={FOOT_LINK}>
-            원문 보기
-          </a>
-        )}
         <Link to={detailTo} className={FOOT_LINK}>
           자세히 보기
         </Link>

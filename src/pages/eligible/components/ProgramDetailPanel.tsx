@@ -25,7 +25,7 @@ import docIcon from '@/assets/icons/eligible-doc-15.svg'
 import checkIcon from '@/assets/icons/eligible-check.svg'
 import alertIcon from '@/assets/icons/eligible-alert.svg'
 import { ResultBadge, Tag } from './Tag'
-import { deadlineLabel, isDeadlineSoon, monthDay, placeLabel } from './programFormat'
+import { deadlineLabel, isDeadlineSoon, monthDay } from './programFormat'
 import { useProgramApply } from './useProgramApply'
 
 const FOOT_BTN =
@@ -222,15 +222,17 @@ function Gallery({ program }: { program: ProgramDetail }) {
 }
 
 function Summary({ program }: { program: ProgramDetail }) {
-  const place = [program.venue ? placeLabel(program) : program.city, program.venue?.address].filter(Boolean).join(' · ')
+  const place = [program.venue?.name, program.venue?.address].filter(Boolean).join(' · ')
+  // 수집 공고(주최 기관이 없는 공고)는 applyUrl이 원문 페이지예요.
+  const sourceUrl = program.hostOrganizationId == null ? program.applyUrl : null
   const method = program.applyMethod === 'DIRECT' ? '이 서비스에서 바로 신청' : applyMethodLabel(program.applyMethod)
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-start gap-3">
         <h2 className="min-w-0 flex-1 text-[22px] font-bold text-gray-900">{program.title}</h2>
-        {program.sourceUrl && (
+        {sourceUrl && (
           <a
-            href={program.sourceUrl}
+            href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-0.5 flex h-8 shrink-0 items-center gap-1 rounded-2xl border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50"
