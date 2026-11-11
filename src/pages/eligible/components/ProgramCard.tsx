@@ -27,8 +27,9 @@ function checkNotes(counts: ResultCounts): string[] {
 
 /** 참여 가능 프로그램 카드 (화면 03 그리드, 04 카드 보기). */
 const FOOT_LINK =
-  'inline-flex h-9 shrink-0 items-center rounded-[18px] px-3 text-[13px] font-medium whitespace-nowrap text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-const FOOT_BUTTON = 'w-[112px]'
+  'inline-flex h-9 shrink-0 items-center rounded-[18px] px-2.5 text-[13px] font-medium whitespace-nowrap text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+// 카드 폭이 좁아도 넘치지 않게 신청 버튼 폭을 고정해 카드끼리 줄을 맞춰요.
+const FOOT_BUTTON = 'w-[104px] shrink-0 px-0'
 
 export function ProgramCard({
   program,
@@ -101,7 +102,7 @@ export function ProgramCard({
       )}
 
       {/* 배지·자세히 보기·신청 버튼은 모두 36px 알약 모양, 신청 버튼은 폭을 고정해 카드끼리 줄이 맞아요. */}
-      <div className="mt-auto flex items-center gap-1.5 pt-0.5">
+      <div className="mt-auto flex min-w-0 items-center gap-1 pt-0.5">
         {result && <ResultBadge result={result} size="pill" />}
         <span className="flex-1" />
         <Link to={detailTo} className={FOOT_LINK}>
@@ -112,7 +113,7 @@ export function ProgramCard({
             신청 마감
           </Button>
         ) : program.applyMethod === 'DIRECT' ? (
-          <Button onClick={onApply} className={FOOT_BUTTON}>
+          <Button variant="tonal" onClick={onApply} className={FOOT_BUTTON}>
             바로 신청
           </Button>
         ) : (

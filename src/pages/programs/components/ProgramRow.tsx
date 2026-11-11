@@ -95,7 +95,7 @@ export function ProgramRow({
             </Button>
           </Link>
         ) : program.applyMethod === 'DIRECT' ? (
-          <Button size="sm" onClick={onApply}>
+          <Button variant="tonal" size="sm" onClick={onApply}>
             바로 신청
           </Button>
         ) : (
