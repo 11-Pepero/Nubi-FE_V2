@@ -4,7 +4,7 @@ import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/r
 import { eventApi, reviewApi } from '@/api/endpoints'
 import { errorMessage } from '@/api/client'
 import type { ReceivedReviews, ReviewReplyResult } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, SegmentedTabs, useToast } from '@/components/ui'
+import { EmptyState, ErrorState, LoadingState, SegmentedTabs, useToast, LoadMore } from '@/components/ui'
 import { qk } from '@/lib/queryKeys'
 import { EventDetailHeader } from './detail/EventDetailHeader'
 import { StatCards } from './detail/shared'
@@ -147,13 +147,7 @@ export default function EventReviewsPage() {
                   onReply={(content) => reply(r.reviewId, content)}
                 />
               ))}
-              {query.hasNextPage && (
-                <div className="flex justify-center pt-1">
-                  <Button variant="outline" loading={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>
-                    더 보기
-                  </Button>
-                </div>
-              )}
+              <LoadMore query={query} className="pt-1" />
             </>
           )}
         </section>

@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { LoadMore } from '@/components/ui'
 import { programApi } from '@/api/endpoints'
 import { errorMessage, resolveAssetUrl } from '@/api/client'
 import type { ProgramReview } from '@/api/types'
@@ -54,16 +55,7 @@ export function ProgramReviews({ programId }: { programId: number }) {
               <ReviewItem key={r.reviewId} review={r} />
             ))}
           </ul>
-          {query.hasNextPage && (
-            <button
-              type="button"
-              disabled={query.isFetchingNextPage}
-              onClick={() => query.fetchNextPage()}
-              className="flex h-9 items-center justify-center rounded-[18px] border border-gray-200 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-400"
-            >
-              {query.isFetchingNextPage ? '불러오는 중이에요' : '더 보기'}
-            </button>
-          )}
+          <LoadMore query={query} className="pt-1" />
         </>
       )}
     </section>

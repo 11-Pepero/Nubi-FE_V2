@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { eventApi } from '@/api/endpoints'
 import type { ProgramStatus } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, PageHeader, UnderlineTabs } from '@/components/ui'
+import { Button, EmptyState, ErrorState, LoadingState, PageHeader, UnderlineTabs, LoadMore } from '@/components/ui'
 import { formatShortDate } from '@/lib/format'
 import { qk } from '@/lib/queryKeys'
 import { EventRow } from './list/EventRow'
@@ -113,13 +113,7 @@ function EventList({ tab }: { tab: Tab }) {
       {events.map((event) => (
         <EventRow key={event.eventId} event={event} />
       ))}
-      {query.hasNextPage && (
-        <div className="flex justify-center pt-1">
-          <Button variant="outline" loading={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>
-            더 보기
-          </Button>
-        </div>
-      )}
+      <LoadMore query={query} className="pt-1" />
     </div>
   )
 }

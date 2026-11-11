@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { programApi } from '@/api/endpoints'
 import type { ApplyMethod, District, EligibilityResult, ProgramCategory, ProgramSearchParams } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/ui'
+import { EmptyState, ErrorState, LoadingState, PageHeader, LoadMore } from '@/components/ui'
 import { APPLY_METHOD_LABEL, DISTRICT_LABEL } from '@/lib/labels'
 import { useSelectedGroup } from '@/lib/selectedGroup'
 import { qk } from '@/lib/queryKeys'
@@ -283,13 +283,7 @@ export default function ProgramExplorePage() {
               ))}
             </div>
           )}
-          {listQuery.hasNextPage && (
-            <div className="flex justify-center pt-6">
-              <Button variant="outline" loading={listQuery.isFetchingNextPage} onClick={() => listQuery.fetchNextPage()}>
-                더 보기
-              </Button>
-            </div>
-          )}
+          <LoadMore query={listQuery} className="pt-6" />
         </>
       )}
       {modal}

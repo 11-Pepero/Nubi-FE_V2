@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import { carePersonApi, programApi } from '@/api/endpoints'
 import type { EligibilityResult } from '@/api/types'
-import { Button, EmptyState, ErrorState, LoadingState, PageHeader, SegmentedTabs } from '@/components/ui'
+import { Button, EmptyState, ErrorState, LoadingState, PageHeader, SegmentedTabs, LoadMore } from '@/components/ui'
 import { useSelectedGroup } from '@/lib/selectedGroup'
 import { qk } from '@/lib/queryKeys'
 import { cn, supportText, toYearMonth } from '@/lib/format'
@@ -311,13 +311,7 @@ export default function EligiblePage() {
                   />
                 ))}
               </div>
-              {listQuery.hasNextPage && (
-                <div className="flex justify-center pt-6">
-                  <Button variant="outline" loading={listQuery.isFetchingNextPage} onClick={() => listQuery.fetchNextPage()}>
-                    더 보기
-                  </Button>
-                </div>
-              )}
+              <LoadMore query={listQuery} className="pt-6" />
             </>
           )}
         </>
