@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script>
+      // 새로 고침 때 밝은 화면이 깜빡이지 않게, 저장된 화면 설정을 그리기 전에 적용합니다. (src/theme)
+      (function () {
+        try {
+          var a = JSON.parse(localStorage.getItem('nubi.appearance') || '{}')
+          var v = JSON.parse(localStorage.getItem('nubi.appearance.vars') || 'null')
+          var mode = a.mode || 'system'
+          var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var r = document.documentElement
+          r.dataset.mode = dark ? 'dark' : 'light'
+          var vars = v && (dark ? v.dark : v.light)
+          if (vars) for (var k in vars) r.style.setProperty(k, vars[k])
+        } catch (e) {}
+      })()
+    </script>
+    <title>Nubi</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

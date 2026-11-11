@@ -1,0 +1,132 @@
+import { Link } from 'react-router-dom'
+import type { EligibilityResult, ProgramSummary } from '@/api/types'
+import { Button } from '@/components/ui'
+import { PROGRAM_CATEGORY_LABEL } from '@/lib/labels'
+import { cn } from '@/lib/format'
+import calendarIcon from '@/assets/icons/eligible-calendar.svg'
+import pinIcon from '@/assets/icons/eligible-pin.svg'
+import userIcon from '@/assets/icons/eligible-user.svg'
+import { ResultBadge, Tag } from './Tag'
+import { cardDateTime, deadlineLabel, isDeadlineSoon, placeLabel } from './programFormat'
+
+export interface ResultCounts {
+  metCount: number
+  missingCount: number
+  unknownCount: number
+  careCheckCount: number
+}
+
+/** 확인할 점 한 줄 (노란 메모). 목록 응답의 숫자로 만듭니다. */
+function checkNotes(counts: ResultCounts): string[] {
+  const notes: string[] = []
+  if (counts.missingCount > 0) notes.push(`지원 ${counts.missingCount}개 없음`)
+  if (counts.unknownCount > 0) notes.push(`지원 ${counts.unknownCount}개 확인 필요`)
+  if (counts.careCheckCount > 0) notes.push(`개별 케어 ${counts.careCheckCount}건 확인`)
+  return notes
+}
+
+/** 참여 가능 프로그램 카드 (화면 03 그리드, 04 카드 보기). */
+const FOOT_LINK =
+  'inline-flex h-9 shrink-0 items-center rounded-[18px] px-3 text-[13px] font-medium whitespace-nowrap text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+const FOOT_BUTTON = 'w-[112px]'
+
+export function ProgramCard({
+  program,
+  result,
+  counts,
+  selected,
+  detailTo,
+  onApply,
+}: {
+  program: ProgramSummary
+  result?: EligibilityResult | null
+  counts?: ResultCounts | null
+  selected?: boolean
+  detailTo: string
+  onApply: () => void
+}) {
+  const notes = counts ? checkNotes(counts) : []
+  const open = program.status === 'OPEN'
+  const soon = isDeadlineSoon(program.deadlineAt)
+
+  return (
+    <article
+      className={cn(
+        'flex h-full flex-col gap-3 rounded-2xl border-2 bg-gray-50 px-5 py-[18px]',
+        selected ? 'border-brand' : 'border-transparent',
+      )}
+    >
+      <div className="flex items-center gap-1.5">
+        <p className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-gray-500">{program.hostName ?? '주최 기관 미정'}</p>
+        <p className={cn('shrink-0 text-[14px] font-bold whitespace-nowrap', !open ? 'text-gray-400' : soon ? 'text-brand' : 'text-gray-900')}>
+          {open ? deadlineLabel(program.deadlineAt) : '마감'}
+        </p>
+      </div>
+
+      {/* 제목은 두 줄까지, 한 줄이어도 두 줄 높이를 잡아 카드 높이를 맞춥니다. */}
+      <Link
+        to={detailTo}
+        title={program.title}
+        className="line-clamp-2 min-h-[2lh] text-[16px] leading-[1.4] font-bold text-gray-900 hover:underline"
+      >
+        {program.title}
+      </Link>
+
+      <ul className="flex flex-col gap-1 text-[12.5px] text-gray-600">
+        <li className="flex items-center gap-1.5">
+          <img src={calendarIcon} alt="" width={14} height={14} />
+          {cardDateTime(program.startAt)}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <img src={pinIcon} alt="" width={14} height={14} />
+          <span className="truncate">{placeLabel(program)}</span>
+        </li>
+        <li className="flex items-center gap-1.5">
+          <img src={userIcon} alt="" width={14} height={14} />
+          {program.capacity ? `정원 ${program.capacity}명` : '정원 제한 없음'}
+        </li>
+      </ul>
+
+      <div className="flex min-h-7 flex-wrap gap-1.5">
+        {program.category && <Tag>{PROGRAM_CATEGORY_LABEL[program.category]}</Tag>}
+        {counts && counts.metCount > 0 && <Tag>지원 {counts.metCount}개 맞음</Tag>}
+        {program.applyMethod === 'DIRECT' && <Tag>앱에서 바로 신청</Tag>}
+      </div>
+
+      {notes.length > 0 && (
+        <div className="flex gap-1.5 rounded-[10px] bg-amber-50 px-3 py-2.5 text-[12.5px]">
+          <span className="shrink-0 font-bold text-gray-900">확인할 점</span>
+          <span className="text-gray-700">{notes.join(' · ')}</span>
+        </div>
+      )}
+
+      {/* 배지·자세히 보기·신청 버튼은 모두 36px 알약 모양, 신청 버튼은 폭을 고정해 카드끼리 줄이 맞아요. */}
+      <div className="mt-auto flex items-center gap-1.5 pt-0.5">
+        {result && <ResultBadge result={result} size="pill" />}
+        <span className="flex-1" />
+        {/* 신청 방법을 모르는 수집 공고는 신청 버튼이 이미 원문으로 가니 원문 링크를 또 두지 않아요. */}
+        {program.sourceUrl && program.applyMethod && (
+          <a href={program.sourceUrl} target="_blank" rel="noopener noreferrer" className={FOOT_LINK}>
+            원문 보기
+          </a>
+        )}
+        <Link to={detailTo} className={FOOT_LINK}>
+          자세히 보기
+        </Link>
+        {!open ? (
+          <Button variant="outline" disabled className={FOOT_BUTTON}>
+            신청 마감
+          </Button>
+        ) : program.applyMethod === 'DIRECT' ? (
+          <Button onClick={onApply} className={FOOT_BUTTON}>
+            바로 신청
+          </Button>
+        ) : (
+          <Button variant="outline" onClick={onApply} className={FOOT_BUTTON}>
+            {program.applyMethod ? '신청 준비' : '원문에서 신청'}
+          </Button>
+        )}
+      </div>
+    </article>
+  )
+}

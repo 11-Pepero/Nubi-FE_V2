@@ -1,0 +1,32 @@
+// React Query 키. 같은 데이터를 여러 화면에서 쓰므로 한곳에 모읍니다.
+export const qk = {
+  me: ['organization', 'me'] as const,
+  supportTags: ['support-tags'] as const,
+  groups: ['groups'] as const,
+  group: (id: number) => ['groups', id] as const,
+  groupSummary: ['groups', 'summary'] as const,
+  carePersons: (params?: object) => ['care-persons', params ?? {}] as const,
+  carePerson: (id: number) => ['care-persons', 'detail', id] as const,
+  programs: (params?: object) => ['programs', params ?? {}] as const,
+  programCities: ['programs', 'cities'] as const,
+  program: (id: number, groupId?: number) => ['programs', 'detail', id, groupId ?? null] as const,
+  eligible: (params: object) => ['programs', 'eligible', params] as const,
+  eligibility: (programId: number, groupId: number, careIds?: number[]) =>
+    ['programs', 'eligibility', programId, groupId, careIds ?? []] as const,
+  venues: (keyword?: string) => ['venues', keyword ?? ''] as const,
+  venueFacilities: (id: number) => ['venues', id, 'facilities'] as const,
+  eventDashboard: ['events', 'summary'] as const,
+  myEvents: (params?: object) => ['events', 'list', params ?? {}] as const,
+  eventApplications: (eventId: number, params?: object) => ['events', eventId, 'applications', params ?? {}] as const,
+  eventApplication: (eventId: number, applicationId: number) =>
+    ['events', eventId, 'applications', 'detail', applicationId] as const,
+  eventNeeds: (eventId: number) => ['events', eventId, 'needs'] as const,
+  myApplications: (params?: object) => ['applications', 'list', params ?? {}] as const,
+  myApplicationSummary: ['applications', 'summary'] as const,
+  myApplication: (id: number) => ['applications', 'detail', id] as const,
+  notifications: ['notifications'] as const,
+  unreadCount: ['notifications', 'unread-count'] as const,
+  districts: (month?: string) => ['regions', 'districts', month ?? ''] as const,
+  district: (district: string, month?: string) => ['regions', 'districts', district, month ?? ''] as const,
+  markers: (params?: object) => ['regions', 'markers', params ?? {}] as const,
+}
