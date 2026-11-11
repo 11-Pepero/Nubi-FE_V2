@@ -55,7 +55,9 @@ import type {
   SupportCategory,
   SupportCategoryGroup,
   TokenResponse,
+  PlaceCandidate,
   Venue,
+  VenueCreateRequest,
   VenueFacilities,
   YearMonthString,
 } from './types'
@@ -115,6 +117,10 @@ export const programApi = {
 export const venueApi = {
   search: (params: { keyword?: string } & PageParams = {}) =>
     api.get<PageResponse<Venue>>('/venues', { params }),
+  /** 카카오에서 용인시 범위의 장소를 찾아요 (최대 15곳) */
+  places: (query: string) => api.get<PlaceCandidate[]>('/venues/places', { params: { query } }),
+  /** 카카오에서 고른 장소를 우리 장소로 등록해요. 같은 장소가 있으면 그 장소를 돌려줘요. */
+  register: (body: VenueCreateRequest) => api.post<Venue>('/venues', body),
   facilities: (venueId: number) => api.get<VenueFacilities>(`/venues/${venueId}/facilities`),
 }
 
