@@ -102,7 +102,7 @@ function Hero({ isAuthenticated }: { isAuthenticated: boolean }) {
             to="/app"
             className="flex h-[38px] items-center rounded-[19px] bg-gray-900 px-5 text-[13.5px] font-bold whitespace-nowrap text-white hover:bg-gray-800"
           >
-            앱으로 가기
+            바로가기
           </Link>
         ) : (
           <>
@@ -287,7 +287,7 @@ function Cta({ isAuthenticated }: { isAuthenticated: boolean }) {
         to={isAuthenticated ? '/app' : '/signup'}
         className="mt-5 flex h-[52px] items-center rounded-xl bg-brand px-5 text-[16px] font-bold text-white hover:bg-brand-strong"
       >
-        {isAuthenticated ? '앱으로 가기' : '우리 기관 시작하기'}
+        {isAuthenticated ? '바로가기' : '우리 기관 시작하기'}
       </Link>
     </section>
   )
