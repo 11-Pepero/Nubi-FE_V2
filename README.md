@@ -23,6 +23,14 @@ Nubi 웹 프론트엔드 (기관 담당자용)
 
 배포처럼 프론트와 백엔드 출처가 다르면 `VITE_API_BASE_URL`에 백엔드 주소를 넣고, 백엔드 `CORS_ALLOWED_ORIGINS`에 프론트 주소를 추가합니다.
 
+## 배포
+
+- Vercel: https://nubi-fe-v2.vercel.app
+- 운영 배포는 main 브랜치를 따릅니다. 평소에는 develop에서 개발하고, 배포할 때 develop → main PR을 머지합니다.
+- develop에 머지하면 Vercel 미리보기(Preview) 주소에만 반영됩니다.
+- `vercel.json`은 안쪽 주소(`/app/programs` 등)로 바로 들어가거나 새로고침해도 화면이 뜨도록 모든 주소를 `index.html`로 보냅니다.
+- 제출 마감 이후에는 main에 머지하지 않습니다.
+
 ## 구조
 
 ```
