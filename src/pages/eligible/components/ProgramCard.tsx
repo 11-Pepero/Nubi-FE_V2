@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { resolveAssetUrl } from '@/api/client'
 import type { EligibilityResult, ProgramSummary } from '@/api/types'
 import { Button } from '@/components/ui'
 import { PROGRAM_CATEGORY_LABEL } from '@/lib/labels'
@@ -64,14 +65,21 @@ export function ProgramCard({
         </p>
       </div>
 
-      {/* 제목은 두 줄까지, 한 줄이어도 두 줄 높이를 잡아 카드 높이를 맞춥니다. */}
-      <Link
-        to={detailTo}
-        title={program.title}
-        className="line-clamp-2 min-h-[2lh] text-[16px] leading-[1.4] font-bold text-gray-900 hover:underline"
-      >
-        {program.title}
-      </Link>
+      {/* 제목은 두 줄까지, 한 줄이어도 두 줄 높이를 잡아 카드 높이를 맞춥니다. 사진이 있으면 오른쪽에 작게 보여요. */}
+      <div className="flex items-start gap-3">
+        <Link
+          to={detailTo}
+          title={program.title}
+          className="line-clamp-2 min-h-[2lh] min-w-0 flex-1 text-[16px] leading-[1.4] font-bold text-gray-900 hover:underline"
+        >
+          {program.title}
+        </Link>
+        {program.thumbnailUrl && (
+          <Link to={detailTo} tabIndex={-1} aria-hidden className="size-11 shrink-0 overflow-hidden rounded-[10px] bg-white">
+            <img src={resolveAssetUrl(program.thumbnailUrl)} alt="" loading="lazy" className="size-full object-cover" />
+          </Link>
+        )}
+      </div>
 
       <ul className="flex flex-col gap-1 text-[12.5px] text-gray-600">
         <li className="flex items-center gap-1.5">
