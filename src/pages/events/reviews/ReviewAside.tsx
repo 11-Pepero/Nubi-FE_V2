@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { eventApi } from '@/api/endpoints'
 import type { ReceivedReviews } from '@/api/types'
-import { Button, Spinner } from '@/components/ui'
+import { AiProgress, Button } from '@/components/ui'
 import { errorMessage } from '@/api/client'
 import { REVIEW_REACTION_LABEL } from '@/lib/labels'
 import { qk } from '@/lib/queryKeys'
@@ -74,10 +74,11 @@ export function ReviewSummaryPanel({ eventId }: { eventId: number }) {
     return (
       <div className={panel}>
         <h2 className="text-[15px] font-bold text-gray-900">후기 요약</h2>
-        <div className="flex items-center gap-2 text-[13px] text-gray-500">
-          <Spinner className="size-4" />
-          후기를 읽고 요약하는 중이에요
-        </div>
+        <AiProgress
+          title="AI가 후기를 요약하고 있어요"
+          expectedMs={8_000}
+          steps={['후기를 하나씩 읽고 있어요', '좋았던 점과 아쉬운 점을 모으고 있어요', '다음 행사 개선점을 정리하고 있어요']}
+        />
       </div>
     )
   }
