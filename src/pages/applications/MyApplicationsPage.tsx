@@ -10,6 +10,7 @@ import { qk } from '@/lib/queryKeys'
 import { cn, dDay } from '@/lib/format'
 import { StepProgress } from './components/StepProgress'
 import { ApplicationDetailModal } from './components/ApplicationDetailModal'
+import { canReview, reviewButtonLabel, reviewPath } from './components/review/reviewable'
 import { applyMethodChipLabel, peopleText, rowDate } from './components/format'
 
 type Tab = 'ALL' | 'PREPARING' | 'WAITING' | 'CONFIRMED' | 'ATTENDED'
@@ -30,6 +31,7 @@ export default function MyApplicationsPage() {
   const params = { status: TAB_STATUS[tab], size: 100 }
   const list = useQuery({ queryKey: qk.myApplications(params), queryFn: () => applicationApi.list(params) })
   const s = summary.data
+  const detailReviewId = list.data?.content.find((a) => a.applicationId === detailId)?.reviewId ?? null
 
   return (
     <div className="flex w-full flex-col">
@@ -39,7 +41,11 @@ export default function MyApplicationsPage() {
         <SummaryCard label="준비 중" value={s?.preparing} hint="신청서와 문의문을 만들었어요" />
         <SummaryCard label="접수 기다림" value={s?.waiting} hint="기관 답을 기다리고 있어요" />
         <SummaryCard label="참여 예정" value={s?.upcoming} hint={`이번 주 ${s?.upcomingThisWeek ?? 0}건`} highlight />
-        <SummaryCard label="다녀왔어요" value={s?.attended} hint="다녀온 뒤 후기를 남겨 주세요" />
+        <SummaryCard
+          label="다녀왔어요"
+          value={s?.attended}
+          hint={s?.reviewPending ? `후기 ${s.reviewPending}건을 남겨 주세요` : '다녀온 뒤 후기를 남겨 주세요'}
+        />
       </div>
 
       <div className="pt-5">
@@ -75,7 +81,7 @@ export default function MyApplicationsPage() {
         외부 기관 접수는 대신 넣지 않아요. 담당자가 전화나 서면으로 접수한 뒤 접수 완료를 눌러 주세요.
       </p>
 
-      <ApplicationDetailModal applicationId={detailId} onClose={() => setDetailId(null)} />
+      <ApplicationDetailModal applicationId={detailId} reviewId={detailReviewId} onClose={() => setDetailId(null)} />
     </div>
   )
 }
@@ -141,6 +147,7 @@ function RowAction({ item, onOpen }: { item: MyApplicationSummary; onOpen: () =>
   const navigate = useNavigate()
   const toast = useToast()
   const queryClient = useQueryClient()
+  const [now] = useState(() => Date.now())
   const submit = useMutation({
     mutationFn: () =>
       applicationApi.markSubmitted(item.applicationId, {
@@ -179,17 +186,17 @@ function RowAction({ item, onOpen }: { item: MyApplicationSummary; onOpen: () =>
       </Button>
     )
   }
+  if (canReview(item.status, item.startAt, now)) {
+    return (
+      <Button variant="outline" className={pill} onClick={stop(() => navigate(reviewPath(item.applicationId, item.reviewId)))}>
+        {reviewButtonLabel(item.reviewId)}
+      </Button>
+    )
+  }
   if (item.status === 'CONFIRMED') {
     return (
       <Button variant="soft" className={pill} onClick={stop(onOpen)}>
         참가 안내 보기
-      </Button>
-    )
-  }
-  if (item.status === 'ATTENDED') {
-    return (
-      <Button variant="outline" className={pill} onClick={stop(() => navigate(`/app/applications/${item.applicationId}/review`))}>
-        후기 남기기
       </Button>
     )
   }

@@ -10,6 +10,7 @@ import { qk } from '@/lib/queryKeys'
 import { cn, dDay, formatDateTime, formatRange, parseDate } from '@/lib/format'
 import { peopleText } from './format'
 import { StepProgress } from './StepProgress'
+import { canReview, reviewButtonLabel, reviewPath } from './review/reviewable'
 
 const PREP_TONE = { PENDING: 'gray', READY: 'green', CHECK: 'amber' } as const
 
@@ -23,7 +24,16 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 /** 신청 상세 (화면 05의 "참가 안내 보기" / 행 클릭): 행사 정보, 지원, 케어, 문의 메시지, 문의 보내기, 신청 취소. */
-export function ApplicationDetailModal({ applicationId, onClose }: { applicationId: number | null; onClose: () => void }) {
+export function ApplicationDetailModal({
+  applicationId,
+  reviewId,
+  onClose,
+}: {
+  applicationId: number | null
+  /** 목록에서 넘겨받은 이미 남긴 후기. 상세 응답에는 없어요. */
+  reviewId?: number | null
+  onClose: () => void
+}) {
   const open = applicationId != null
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: qk.myApplication(applicationId ?? 0),
@@ -38,13 +48,13 @@ export function ApplicationDetailModal({ applicationId, onClose }: { application
       ) : error ? (
         <ErrorState error={error} onRetry={refetch} />
       ) : data ? (
-        <DetailBody detail={data} onClose={onClose} />
+        <DetailBody detail={data} reviewId={reviewId ?? null} onClose={onClose} />
       ) : null}
     </Modal>
   )
 }
 
-function DetailBody({ detail, onClose }: { detail: MyApplicationDetail; onClose: () => void }) {
+function DetailBody({ detail, reviewId, onClose }: { detail: MyApplicationDetail; reviewId: number | null; onClose: () => void }) {
   const navigate = useNavigate()
   const toast = useToast()
   const queryClient = useQueryClient()
@@ -236,16 +246,16 @@ function DetailBody({ detail, onClose }: { detail: MyApplicationDetail; onClose:
             )}
           </>
         )}
-        {detail.status === 'ATTENDED' && (
+        {canReview(detail.status, program.startAt, now) && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               onClose()
-              navigate(`/app/applications/${detail.applicationId}/review`)
+              navigate(reviewPath(detail.applicationId, reviewId))
             }}
           >
-            후기 남기기
+            {reviewButtonLabel(reviewId)}
           </Button>
         )}
         <Button variant="soft" size="sm" onClick={onClose}>
