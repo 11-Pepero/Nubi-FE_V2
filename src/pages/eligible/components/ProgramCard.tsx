@@ -65,41 +65,44 @@ export function ProgramCard({
         </p>
       </div>
 
-      {/* 제목은 두 줄까지, 한 줄이어도 두 줄 높이를 잡아 카드 높이를 맞춥니다. 사진이 있으면 오른쪽에 작게 보여요. */}
-      <div className="flex items-start gap-3">
-        <Link
-          to={detailTo}
-          title={program.title}
-          className="line-clamp-2 min-h-[2lh] min-w-0 flex-1 text-[16px] leading-[1.4] font-bold text-gray-900 hover:underline"
-        >
-          {program.title}
-        </Link>
+      {/* 제목·일시·장소·정원·태그 왼쪽, 사진은 오른쪽에 그 높이만큼 꽉 차게 보여요.
+          제목은 두 줄까지, 한 줄이어도 두 줄 높이를 잡아 카드 높이를 맞춥니다. */}
+      <div className="flex gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <Link
+            to={detailTo}
+            title={program.title}
+            className="line-clamp-2 min-h-[2lh] text-[16px] leading-[1.4] font-bold text-gray-900 hover:underline"
+          >
+            {program.title}
+          </Link>
+
+          <ul className="flex flex-col gap-1 text-[12.5px] text-gray-600">
+            <li className="flex items-center gap-1.5">
+              <img src={calendarIcon} alt="" width={14} height={14} />
+              {cardDateTime(program.startAt)}
+            </li>
+            <li className="flex items-center gap-1.5">
+              <img src={pinIcon} alt="" width={14} height={14} />
+              <span className="truncate">{program.venue?.name ?? '장소 미정'}</span>
+            </li>
+            <li className="flex items-center gap-1.5">
+              <img src={userIcon} alt="" width={14} height={14} />
+              {program.capacity ? `정원 ${program.capacity}명` : '정원 제한 없음'}
+            </li>
+          </ul>
+
+          <div className="flex min-h-7 flex-wrap gap-1.5">
+            {program.category && <Tag>{PROGRAM_CATEGORY_LABEL[program.category]}</Tag>}
+            {counts && counts.metCount > 0 && <Tag>지원 {counts.metCount}개 맞음</Tag>}
+            {program.applyMethod === 'DIRECT' && <Tag>앱에서 바로 신청</Tag>}
+          </div>
+        </div>
         {program.thumbnailUrl && (
-          <Link to={detailTo} tabIndex={-1} aria-hidden className="size-11 shrink-0 overflow-hidden rounded-[10px] bg-white">
-            <img src={resolveAssetUrl(program.thumbnailUrl)} alt="" loading="lazy" className="size-full object-cover" />
+          <Link to={detailTo} tabIndex={-1} aria-hidden className="relative w-[120px] shrink-0 self-stretch overflow-hidden rounded-xl bg-white">
+            <img src={resolveAssetUrl(program.thumbnailUrl)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
           </Link>
         )}
-      </div>
-
-      <ul className="flex flex-col gap-1 text-[12.5px] text-gray-600">
-        <li className="flex items-center gap-1.5">
-          <img src={calendarIcon} alt="" width={14} height={14} />
-          {cardDateTime(program.startAt)}
-        </li>
-        <li className="flex items-center gap-1.5">
-          <img src={pinIcon} alt="" width={14} height={14} />
-          <span className="truncate">{program.venue?.name ?? '장소 미정'}</span>
-        </li>
-        <li className="flex items-center gap-1.5">
-          <img src={userIcon} alt="" width={14} height={14} />
-          {program.capacity ? `정원 ${program.capacity}명` : '정원 제한 없음'}
-        </li>
-      </ul>
-
-      <div className="flex min-h-7 flex-wrap gap-1.5">
-        {program.category && <Tag>{PROGRAM_CATEGORY_LABEL[program.category]}</Tag>}
-        {counts && counts.metCount > 0 && <Tag>지원 {counts.metCount}개 맞음</Tag>}
-        {program.applyMethod === 'DIRECT' && <Tag>앱에서 바로 신청</Tag>}
       </div>
 
       {notes.length > 0 && (
