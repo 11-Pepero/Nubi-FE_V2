@@ -59,7 +59,7 @@ export function ProgramCard({
       )}
     >
       <div className="flex items-center gap-1.5">
-        <p className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-gray-500">{program.hostName ?? '주최 기관 미정'}</p>
+        <p className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-gray-500">{program.hostName ?? '용인시 공개 공고'}</p>
         <p className={cn('shrink-0 text-[14px] font-bold whitespace-nowrap', !open ? 'text-gray-400' : soon ? 'text-brand' : 'text-gray-900')}>
           {open ? deadlineLabel(program.deadlineAt) : '마감'}
         </p>

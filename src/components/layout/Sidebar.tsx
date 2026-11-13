@@ -46,7 +46,7 @@ export function Sidebar() {
 
   if (collapsed) {
     return (
-      <aside className="sticky top-0 flex h-screen w-16 shrink-0 flex-col items-center gap-2 border-r border-gray-200 bg-gray-50 py-3">
+      <aside className="sticky top-0 z-30 flex h-screen w-16 shrink-0 flex-col items-center gap-2 border-r border-gray-200 bg-gray-50 py-3">
         <button aria-label="사이드바 펼치기" className="flex size-9 items-center justify-center rounded-[10px] hover:bg-gray-200" onClick={() => setCollapsed(false)}>
           <img src={iconSidebar} alt="" className="size-5" />
         </button>
@@ -65,7 +65,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[288px] shrink-0 flex-col border-r border-gray-200 bg-gray-50 py-3">
+    <aside className="sticky top-0 z-30 flex h-screen w-[288px] shrink-0 flex-col border-r border-gray-200 bg-gray-50 py-3">
       <div className="relative flex min-h-9 items-center gap-3 px-3">
         <button aria-label="사이드바 접기" className="size-5 shrink-0" onClick={() => setCollapsed(true)}>
           <img src={iconSidebar} alt="" className="size-5" />
